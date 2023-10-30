@@ -437,6 +437,11 @@ Mesh* Mesh::GenerateTriangle() {
 	m->colours[1] = Vector4(0.0f, 1.0f, 0.0f, 1.0f);
 	m->colours[2] = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 
+	m->textureCoords = new Vector2[m->numVertices];
+	m->textureCoords[0] = Vector2(0.5f, 0.0f);
+	m->textureCoords[1] = Vector2(1.0f, 1.0f);
+	m->textureCoords[2] = Vector2(0.0f, 1.0f);
+
 	m->BufferData();
 
 	return m;
@@ -490,6 +495,20 @@ Mesh* Mesh::GenerateZAxis() {
 	m->colours = new Vector4[m->numVertices];
 	m->colours[0] = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
 	m->colours[1] = Vector4(0.0f, 0.0f, 1.0f, 1.0f);
+
+	m->BufferData();
+
+	return m;
+}
+
+//TODO
+Mesh* Mesh::GenerateSphere() {
+	Mesh* m = new Mesh();
+	m->type = GL_TRIANGLE_STRIP;
+	m->numVertices = 30;
+
+	m->vertices = new Vector3[m->numVertices];
+	m->colours = new Vector4[m->numVertices];
 
 	m->BufferData();
 

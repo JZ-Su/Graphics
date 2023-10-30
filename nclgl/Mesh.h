@@ -84,6 +84,7 @@ public:
 	bool GetSubMesh(const std::string& name, const SubMesh* s) const;
 
 	static Mesh* GenerateTriangle();
+	static Mesh* GenerateSphere();
 
 	//red
 	static Mesh* GenerateXAxis();
@@ -120,7 +121,7 @@ protected:
 
 	std::vector<std::string>	jointNames;
 	std::vector<int>			jointParents;
-	std::vector< SubMesh>		meshLayers;
+	std::vector<SubMesh>		meshLayers;
 	std::vector<std::string>	layerNames;
 };
 
