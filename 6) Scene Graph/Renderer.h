@@ -20,5 +20,9 @@ protected:
 	Camera* camera;
 	Mesh* cube;
 	Shader* shader;
+
+	Mesh* xAxis;
+	Mesh* yAxis;
+	Mesh* zAxis;
 };
 

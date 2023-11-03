@@ -4,6 +4,10 @@ Renderer::Renderer(Window& parent) :OGLRenderer(parent) {
 	cube = Mesh::LoadFromMeshFile("OffsetCubeY.msh");
 	camera = new Camera();
 
+	xAxis = Mesh::GenerateXAxis();
+	yAxis = Mesh::GenerateYAxis();
+	zAxis = Mesh::GenerateZAxis();
+
 	shader = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
 
 	if (!shader->LoadSuccess()) {
@@ -37,6 +41,11 @@ void Renderer::RenderScene() {
 	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 	BindShader(shader);
 	UpdateShaderMatrices();
+
+	xAxis->Draw();
+	yAxis->Draw();
+	zAxis->Draw();
+
 	glUniform1i(glGetUniformLocation(shader->GetProgram(), "diffuseTex"), 1);
 
 	DrawNode(root);
@@ -47,7 +56,7 @@ void Renderer::DrawNode(SceneNode* n) {
 		Matrix4 model = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
 		glUniformMatrix4fv(glGetUniformLocation(shader->GetProgram(), "modelMatrix"), 1, false, model.values);
 		glUniform4fv(glGetUniformLocation(shader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour());
-		//glUniform1i(glGetUniformLocation(shader->GetProgram(), "useTexture"), 0);
+		glUniform1i(glGetUniformLocation(shader->GetProgram(), "useTexture"), 0);
 		n->Draw(*this);
 	}
 
