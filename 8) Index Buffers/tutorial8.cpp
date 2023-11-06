@@ -16,6 +16,9 @@ int main() {
 	w.ShowOSPointer(false);
 
 	while(w.UpdateWindow() && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)){
+		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_F)) {
+			renderer.SwitchPolygenMode();
+		}
 		float timestep = w.GetTimer()->GetTimeDeltaSeconds();
 		renderer.UpdateScene(timestep);
 		renderer.RenderScene();

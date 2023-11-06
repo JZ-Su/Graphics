@@ -29,6 +29,7 @@ Renderer::Renderer(Window& parent) :OGLRenderer(parent) {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
+	showMesh = false;
 	init = true;
 }
 
@@ -53,8 +54,18 @@ void Renderer::RenderScene() {
 	axis[1]->Draw();
 	axis[2]->Draw();
 
-	glUniform1i(glGetUniformLocation(shader->GetProgram(), "diifuseTex"), 0);
+	glUniform1i(glGetUniformLocation(shader->GetProgram(), "diffuseTex"), 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, terrainTex);
 	heightMap->Draw();
+}
+
+void Renderer::SwitchPolygenMode() {
+	showMesh = !showMesh;
+	if (showMesh) {
+		glPolygonMode(GL_FRONT, GL_LINE);
+	}
+	else {
+		glPolygonMode(GL_FRONT, GL_FILL);
+	}
 }

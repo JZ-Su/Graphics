@@ -9,6 +9,7 @@ public:
 	~Renderer(void);
 	void RenderScene() override;
 	void UpdateScene(float dt) override;
+	void SwitchPolygenMode();
 
 protected:
 	HeightMap* heightMap;
@@ -16,5 +17,6 @@ protected:
 	Camera* camera;
 	GLuint terrainTex;
 	Mesh* axis[3];
+	bool showMesh;
 };
 

@@ -43,7 +43,7 @@ void Renderer::RenderScene() {
 	xAxis->Draw();
 	yAxis->Draw();
 	zAxis->Draw();
-	
+
 	BindShader(matrixShader);
 
 	glUniformMatrix4fv(glGetUniformLocation(matrixShader->GetProgram(), "projMatrix"), 1, false, projMatrix.values);
