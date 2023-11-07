@@ -86,11 +86,11 @@ public:
 	static Mesh* GenerateTriangle();
 	static Mesh* GenerateQuad();
 
-	//red
+	void GenerateNormals();
+	bool GetVertexIndicesForTri(unsigned int i, unsigned int& a, unsigned int& b, unsigned int& c) const;
+
 	static Mesh* GenerateXAxis();
-	//green
 	static Mesh* GenerateYAxis();
-	//blue
 	static Mesh* GenerateZAxis();
 
 protected:
@@ -123,5 +123,8 @@ protected:
 	std::vector<int>			jointParents;
 	std::vector<SubMesh>		meshLayers;
 	std::vector<std::string>	layerNames;
+
+	void GenerateTangents();
+	Vector4 GenerateTangent(int a, int b, int c);
 };
 
