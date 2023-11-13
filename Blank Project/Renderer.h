@@ -18,6 +18,7 @@ protected:
 	SceneNode* sun;
 	SceneNode* earth;
 	SceneNode* water;
+	SceneNode* moonNode;
 	SceneNode* moon;
 
 	Sphere*	sphere;
@@ -33,7 +34,7 @@ protected:
 	GLuint  waterTexture;
 	GLuint  moonTexture;
 
-	GLuint  cubemap;
+	GLuint  cubeMap;
 	Shader* skyboxShader;
 
 	Mesh*	axis[3];

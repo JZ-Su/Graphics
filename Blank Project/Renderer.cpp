@@ -3,39 +3,39 @@
 #include "../nclgl/Camera.h"
 #include "../nclgl/SceneNode.h"
 
-Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
-	sunTexture   = SOIL_load_OGL_texture(TEXTUREDIR"noise.png",			SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	earthTexture = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG",	SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	waterTexture = SOIL_load_OGL_texture(TEXTUREDIR"water.tga",			SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	moonTexture  = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG",	SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	//cubemap = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxyLeft.jpg", TEXTUREDIR"GalaxyRight.jpg",
+Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
+	sunTexture = SOIL_load_OGL_texture(TEXTUREDIR"noise.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	earthTexture = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	waterTexture = SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	moonTexture = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	//cubeMap = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxyLeft.jpg", TEXTUREDIR"GalaxyRight.jpg",
 	//	TEXTUREDIR"GalaxyTop.jpg", TEXTUREDIR"GalaxyBottom.jpg",
 	//	TEXTUREDIR"GalaxyBack", TEXTUREDIR"GalaxyFront.jpg",
 	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
-	if (!sunTexture || !earthTexture || !waterTexture || !moonTexture ) {
+	if (!sunTexture || !earthTexture || !waterTexture || !moonTexture) {
 		return;
 	}
 
-	SetTextureRepeating(sunTexture,   true);
+	SetTextureRepeating(sunTexture, true);
 	SetTextureRepeating(earthTexture, true);
 	SetTextureRepeating(waterTexture, true);
-	SetTextureRepeating(moonTexture,  true);
+	SetTextureRepeating(moonTexture, true);
 
 	quad = Mesh::GenerateQuad();
-	
-	sphere = new Sphere(15.0, false);
-	earthSurface = new Sphere(15.0, false);
+
+	sphere = new Sphere(15.0, 2, false);
+	earthSurface = new Sphere(15.0, 8, false);
 	earthSurface->GenHeightMap();
-	skySurface = new Sphere(15.0, true);
-	waterSurface = new Sphere(15.0, false);
+	skySurface = new Sphere(15.0, 8, true);
+	waterSurface = new Sphere(15.0, 6, false);
 	waterSurface->GenWaterWave();
 	root = new SceneNode();
 
 	sun = new SceneNode(sphere, Vector4(1, 1, 1, 1));
 	sun->SetMesh(sphere);
 	sun->SetColour(Vector4(1.0, 0.2, 0.0, 1.0));
-	sun->SetModelScale(Vector3(100, 100, 100));
+	sun->SetModelScale(Vector3(150, 150, 150));
 	sun->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
 	sun->SetTexture(sunTexture);
 	root->AddChild(sun);
@@ -44,17 +44,20 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
 	earth->SetMesh(earthSurface);
 	earth->SetColour(Vector4(1.0, 1.0, 1.0, 1.0));
 	earth->SetModelScale(Vector3(40, 40, 40));
-	earth->SetTransform(Matrix4::Translation(Vector3(0, 0, 300)));
+	earth->SetTransform(Matrix4::Translation(Vector3(0, 0, 800)));
 	earth->SetTexture(earthTexture);
 	sun->AddChild(earth);
 
 	water = new SceneNode(waterSurface, Vector4(1, 1, 1, 1));
 	water->SetMesh(waterSurface);
 	water->SetColour(Vector4(1.0, 1.0, 1.0, 1.0));
-	water->SetModelScale(Vector3(41, 41, 41));
+	water->SetModelScale(Vector3(40.1, 40.1, 40.1));
 	water->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
 	water->SetTexture(waterTexture);
 	earth->AddChild(water);
+
+	moonNode = new SceneNode();
+	earth->AddChild(moonNode);
 
 	moon = new SceneNode(sphere, Vector4(1, 1, 1, 1));
 	moon->SetMesh(sphere);
@@ -62,14 +65,14 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
 	moon->SetModelScale(Vector3(10, 10, 10));
 	moon->SetTransform(Matrix4::Translation(Vector3(0, 0, 100)));
 	moon->SetTexture(moonTexture);
-	earth->AddChild(moon);
+	moonNode->AddChild(moon);
 
 	axis[0] = Mesh::GenerateXAxis();
 	axis[1] = Mesh::GenerateYAxis();
 	axis[2] = Mesh::GenerateZAxis();
 
-	basicShader = new Shader("SceneVertex.glsl","SceneFragment.glsl");
-	if(!basicShader->LoadSuccess()) {
+	basicShader = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
+	if (!basicShader->LoadSuccess()) {
 		return;
 	}
 	//skyboxShader = new Shader("skyboxVertex.glsl", "skyboxFragment.glsl");
@@ -86,7 +89,7 @@ Renderer::Renderer(Window &parent) : OGLRenderer(parent)	{
 	init = true;
 }
 
-Renderer::~Renderer(void)	{
+Renderer::~Renderer(void) {
 	delete sphere;
 	delete basicShader;
 	glDeleteTextures(1, &sunTexture);
@@ -101,18 +104,18 @@ void Renderer::UpdateScene(float deltaTime, float totalTime) {
 	camera->UpdateCamera(deltaTime);
 	viewMatrix = camera->BuildViewMatrix();
 
-	//waterSurface->Update(dt);
+	waterSurface->Update(totalTime);
 
-	//sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(-3.0f * deltaTime, Vector3(0, 1, 0)));
+	sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(-3.0f * deltaTime, Vector3(0, 1, 0)));
 	earth->SetTransform(earth->GetTransform() * Matrix4::Rotation(-4.5f * deltaTime, Vector3(0, 1, 0)));
-	water->SetTransform(water->GetTransform() * Matrix4::Rotation(-1.5f * deltaTime, Vector3(0, 1, 0)) * Matrix4::Scale(Vector3(1 -0.000001* sin(totalTime), 1 - 0.000001 * sin(totalTime), 1 - 0.000001 * sin(totalTime))));
-	moon->SetTransform(moon->GetTransform() * Matrix4::Rotation(-4.5f * deltaTime, Vector3(0, 1, 0)));
+	moonNode->SetTransform(moonNode->GetTransform() * Matrix4::Rotation(-20.0f * deltaTime, Vector3(0, 1, 0)));
+	moon->SetTransform(moon->GetTransform() * Matrix4::Rotation(-90.0f * deltaTime, Vector3(0, 1, 0)));
 
 	root->Update(deltaTime);
 }
 
-void Renderer::RenderScene()	{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+void Renderer::RenderScene() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	BindShader(basicShader);
 	UpdateShaderMatrices();

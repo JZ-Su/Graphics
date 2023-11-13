@@ -3,7 +3,7 @@
 
 class Sphere : public Mesh {
 public:
-	Sphere(float degree, bool inner);
+	Sphere(float degree,int texRepeat, bool inner);
 	~Sphere(void);
 
 	void GenHeightMap();

@@ -1,6 +1,6 @@
 #include "Sphere.h"
 
-Sphere::Sphere(float degree, bool inner) {
+Sphere::Sphere(float degree,int texRepeat, bool inner) {
 	this->degree = degree;
 	int theta = 180 / degree;
 	int phi = 360 / degree;
@@ -15,13 +15,17 @@ Sphere::Sphere(float degree, bool inner) {
 		for (int x = 0; x <= theta; x++) {
 			int offset = z * (theta + 1) + x;
 			vertices[offset] = PolorToCartesianCoord(Vector3(radius, (float)x * PI / (float)theta, (float)z * PI / (float)theta));
-			if (z < phi / 2) {
-				textureCoords[offset] = Vector2((float)x / (float)theta, 2.0 * (float)z / (float)phi);
+			if (texRepeat == 2) {
+				if (z < phi / 2) {
+					textureCoords[offset] = Vector2((float)x / (float)theta, 2.0 * (float)z / (float)phi);
+				}
+				else {
+					textureCoords[offset] = Vector2((float)x / (float)theta, 2.0 - 2.0 * (float)z / (float)phi);
+				}
 			}
 			else {
-				textureCoords[offset] = Vector2((float)x / (float)theta, 2.0 - 2.0 * (float)z / (float)phi);
+				textureCoords[offset] = Vector2((float)texRepeat * (float)x / (float)theta, (float)texRepeat * (float)z / (float)phi);
 			}
-			
 		}
 	}
 
@@ -78,13 +82,10 @@ void Sphere::GenWaterWave() {
 	for (int z = 2; z < phi - 1; z++) {
 		for (int x = 2; x < theta - 1; x++) {
 			int offset = z * (theta + 1) + x;
-			/*vertices[offset].x += (0.05 * sin(degree * (x - phi / 2)) + 0.01 * cos(degree * z));
-			vertices[offset].y += (0.05 * sin(degree * (x - phi / 2)) - 0.01 * cos(degree * z));
-			vertices[offset].z += (0.05 * sin(degree * (x - phi / 2)) + 0.01 * sin(degree * z));*/
 			Vector3 polorCoord = CartesianToPolorCoord(vertices[offset]);
 			switch ((z + x) % 4) {
-			case 0:  polorCoord.x = 0.95;
-			case 2:	 polorCoord.x = 1.05;
+			case 0:  polorCoord.x = 0.98;
+			case 2:	 polorCoord.x = 1.02;
 			default: break;
 			}
 			vertices[offset] = PolorToCartesianCoord(polorCoord);
@@ -93,7 +94,10 @@ void Sphere::GenWaterWave() {
 	BufferData();
 }
 
-void Sphere::Update(float dt) {
+void Sphere::Update(float totalTime) {
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glDeleteBuffers(MAX_BUFFER, bufferObject);
+	glDeleteVertexArrays(1, &arrayObject);
 	int theta = 180 / degree;
 	int phi = 360 / degree;
 	for (int z = 2; z < phi - 1; z++) {
@@ -101,16 +105,16 @@ void Sphere::Update(float dt) {
 			int offset = z * (theta + 1) + x;
 			Vector3 polorCoord = CartesianToPolorCoord(vertices[offset]);
 			switch ((z + x) % 4) {
-			case 0: polorCoord.x += 0.05 * sin(dt + PI / 2);		break;
-			case 1: polorCoord.x += 0.05 * sin(dt + PI);			break;
-			case 2: polorCoord.x += 0.05 * sin(dt + PI * 3 / 2);	break;
-			case 3: polorCoord.x += 0.05 * sin(dt);					break;
+			case 0: polorCoord.x += 0.00001 * sin(totalTime + PI / 2);		break;
+			case 1: polorCoord.x += 0.00001 * sin(totalTime + PI);			break;
+			case 2: polorCoord.x += 0.00001 * sin(totalTime + PI * 3 / 2);	break;
+			case 3: polorCoord.x += 0.00001 * sin(totalTime);				break;
 			default: break;
 			}
 			vertices[offset] = PolorToCartesianCoord(polorCoord);
 		}
 	}
-	//BufferData();
+	BufferData();
 }
 
 Vector3 Sphere::PolorToCartesianCoord(Vector3 polorCoord) {
