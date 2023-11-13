@@ -14,6 +14,7 @@ Mesh::Mesh(void)	{
 	type		 = GL_TRIANGLES;
 
 	numIndices		= 0;
+	triCount        = 0;
 	vertices		= nullptr;
 	textureCoords	= nullptr;
 	normals			= nullptr;

@@ -13,6 +13,7 @@ int main()	{
 		return -1;
 	}
 	bool showLine = false;
+	bool pause = false;
 	while(w.UpdateWindow()  && !Window::GetKeyboard()->KeyDown(KEYBOARD_ESCAPE)){
 
 		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_F)) {
@@ -24,6 +25,14 @@ int main()	{
 				glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 			}
 		}
+
+		/*if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_P)) {
+			pause = !pause;
+			if (!pause) {
+				renderer.UpdateScene(w.GetTimer()->GetTimeDeltaSeconds(), w.GetTimer()->GetTotalTimeSeconds());
+			}
+			
+		}*/
 		renderer.UpdateScene(w.GetTimer()->GetTimeDeltaSeconds(), w.GetTimer()->GetTotalTimeSeconds());
 		renderer.RenderScene();
 		renderer.SwapBuffers();

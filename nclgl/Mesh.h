@@ -55,7 +55,8 @@ public:
 	static Mesh* LoadFromMeshFile(const std::string& name);
 
 	unsigned int GetTriCount() const {
-		int primCount = indices ? numIndices : numVertices;
+		int primCount = triCount ? triCount * 3 : indices ? numIndices : numVertices;
+		//int primCount = indices ? numIndices : numVertices;
 		return primCount / 3;
 	}
 
@@ -126,5 +127,7 @@ protected:
 
 	void GenerateTangents();
 	Vector4 GenerateTangent(int a, int b, int c);
+
+	int triCount;
 };
 

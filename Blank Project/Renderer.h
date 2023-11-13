@@ -14,9 +14,12 @@ public:
 	 void DrawNode(SceneNode* n);
 	 void DrawSkyBox();
 protected:
+	Camera* camera;
+
 	SceneNode* root;
 	SceneNode* sun;
 	SceneNode* earth;
+	SceneNode* waterNode;
 	SceneNode* water;
 	SceneNode* moonNode;
 	SceneNode* moon;
@@ -26,17 +29,18 @@ protected:
 	Sphere* skySurface;
 	Sphere* waterSurface;
 
+	GLuint  cubeMap;
+	Shader* skyboxShader;
 	Shader* basicShader;
-	Camera* camera;
+
+	Light*  light;
+	Shader* lightShader;
 
 	GLuint  sunTexture;
 	GLuint  earthTexture;
 	GLuint  waterTexture;
 	GLuint  moonTexture;
+	GLuint  earthBump;
 
-	GLuint  cubeMap;
-	Shader* skyboxShader;
-
-	Mesh*	axis[3];
 	Mesh*   quad;
 };

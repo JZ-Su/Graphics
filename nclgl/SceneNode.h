@@ -3,6 +3,7 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Mesh.h"
+#include "Shader.h"
 #include <vector>
 
 class SceneNode
@@ -41,6 +42,9 @@ public:
 	GLuint GetTexture() const { return texture; }
 	void SetTexture(GLuint t) { texture = t; }
 
+	Shader* GetShader() const { return shader; }
+	void SetShader(Shader* s) { this->shader = s; }
+
 	static bool CompareByCameraDistance(SceneNode* a, SceneNode* b) {
 		return (a->distanceFromCamera < b->distanceFromCamera) ? true : false;
 	}
@@ -56,5 +60,6 @@ protected:
 	float distanceFromCamera;
 	float boundingRadius;
 	GLuint texture;
+	Shader* shader;
 };
 

@@ -2,42 +2,51 @@
 #include "../nclgl/Sphere.h"
 #include "../nclgl/Camera.h"
 #include "../nclgl/SceneNode.h"
+#include "../nclgl/Light.h"
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	sunTexture = SOIL_load_OGL_texture(TEXTUREDIR"noise.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 	earthTexture = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 	waterTexture = SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 	moonTexture = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	//cubeMap = SOIL_load_OGL_cubemap(TEXTUREDIR"GalaxyLeft.jpg", TEXTUREDIR"GalaxyRight.jpg",
-	//	TEXTUREDIR"GalaxyTop.jpg", TEXTUREDIR"GalaxyBottom.jpg",
-	//	TEXTUREDIR"GalaxyBack", TEXTUREDIR"GalaxyFront.jpg",
-	//	SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
+	cubeMap = SOIL_load_OGL_cubemap(TEXTUREDIR"uni_west.jpg", TEXTUREDIR"uni_east.jpg",
+		TEXTUREDIR"uni_top.jpg", TEXTUREDIR"uni_bot.jpg",
+		TEXTUREDIR"uni_south.jpg", TEXTUREDIR"uni_north.jpg",
+		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
-	if (!sunTexture || !earthTexture || !waterTexture || !moonTexture) {
+	//earthBump = SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+
+	if (!sunTexture || !earthTexture || !waterTexture || !moonTexture || !cubeMap) {
 		return;
 	}
 
-	SetTextureRepeating(sunTexture, true);
+	SetTextureRepeating(sunTexture,   true);
 	SetTextureRepeating(earthTexture, true);
 	SetTextureRepeating(waterTexture, true);
-	SetTextureRepeating(moonTexture, true);
+	SetTextureRepeating(moonTexture,  true);
+
+	basicShader   = new Shader("SceneVertex.glsl"    , "SceneFragment.glsl"   );
+	skyboxShader  = new Shader("skyboxVertex.glsl"   , "skyboxFragment.glsl"  );
+	lightShader   = new Shader("PerPixelVertex.glsl" , "PerPixelFragment.glsl");
+	//lightShader   = new Shader("BumpVertex.glsl"     , "BumpFragment.glsl"    );
+	if (!basicShader->LoadSuccess() || !skyboxShader->LoadSuccess() || !lightShader->LoadSuccess()) {
+		return;
+	}
 
 	quad = Mesh::GenerateQuad();
-
 	sphere = new Sphere(15.0, 2, false);
-	earthSurface = new Sphere(15.0, 8, false);
-	earthSurface->GenHeightMap();
+	earthSurface = Sphere::GenHeightMap();
 	skySurface = new Sphere(15.0, 8, true);
-	waterSurface = new Sphere(15.0, 6, false);
-	waterSurface->GenWaterWave();
+	waterSurface = Sphere::GenWaterWave(15.0, 6);
 	root = new SceneNode();
 
 	sun = new SceneNode(sphere, Vector4(1, 1, 1, 1));
 	sun->SetMesh(sphere);
 	sun->SetColour(Vector4(1.0, 0.2, 0.0, 1.0));
-	sun->SetModelScale(Vector3(150, 150, 150));
+	sun->SetModelScale(Vector3(200, 200, 200));
 	sun->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
 	sun->SetTexture(sunTexture);
+	sun->SetShader(basicShader);
 	root->AddChild(sun);
 
 	earth = new SceneNode(earthSurface, Vector4(1, 1, 1, 1));
@@ -46,15 +55,20 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	earth->SetModelScale(Vector3(40, 40, 40));
 	earth->SetTransform(Matrix4::Translation(Vector3(0, 0, 800)));
 	earth->SetTexture(earthTexture);
+	earth->SetShader(lightShader);
 	sun->AddChild(earth);
+
+	waterNode = new SceneNode();
+	earth->AddChild(waterNode);
 
 	water = new SceneNode(waterSurface, Vector4(1, 1, 1, 1));
 	water->SetMesh(waterSurface);
 	water->SetColour(Vector4(1.0, 1.0, 1.0, 1.0));
-	water->SetModelScale(Vector3(40.1, 40.1, 40.1));
+	water->SetModelScale(Vector3(42, 42, 42));
 	water->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
 	water->SetTexture(waterTexture);
-	earth->AddChild(water);
+	water->SetShader(lightShader);
+	waterNode->AddChild(water);
 
 	moonNode = new SceneNode();
 	earth->AddChild(moonNode);
@@ -65,76 +79,62 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	moon->SetModelScale(Vector3(10, 10, 10));
 	moon->SetTransform(Matrix4::Translation(Vector3(0, 0, 100)));
 	moon->SetTexture(moonTexture);
+	moon->SetShader(lightShader);
 	moonNode->AddChild(moon);
 
-	axis[0] = Mesh::GenerateXAxis();
-	axis[1] = Mesh::GenerateYAxis();
-	axis[2] = Mesh::GenerateZAxis();
-
-	basicShader = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
-	if (!basicShader->LoadSuccess()) {
-		return;
-	}
-	//skyboxShader = new Shader("skyboxVertex.glsl", "skyboxFragment.glsl");
-	//if (!skyboxShader->LoadSuccess()) {
-	//	return;
-	//}
-
-	camera = new Camera(-30.0f, 30.0f, Vector3(300, 300, 500));
-	//camera = new Camera(-90.0f, 0.0f, Vector3(0, 60, 0));
+	camera = new Camera(-15.0f, -50.0f, Vector3(-1000, 300, 1000));
+	light = new Light(Vector3(0, 0, 0), Vector4(1, 1, 1, 1), 1000.0f);
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, 45.0f);
 
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 	init = true;
 }
 
 Renderer::~Renderer(void) {
 	delete sphere;
+	delete earthSurface;
+	delete waterSurface;
+	delete skySurface;
+
+	delete root;
+
 	delete basicShader;
+	delete skyboxShader;
+	delete lightShader;
+
+	delete camera;
+	delete light;
+
 	glDeleteTextures(1, &sunTexture);
 	glDeleteTextures(1, &earthTexture);
 	glDeleteTextures(1, &moonTexture);
 	glDeleteTextures(1, &waterTexture);
-	delete root;
+	glDeleteTextures(1, &cubeMap);
+	glDeleteTextures(1, &earthBump);
 }
 
 void Renderer::UpdateScene(float deltaTime, float totalTime) {
-	//std::cout << totalTime << "\n";
 	camera->UpdateCamera(deltaTime);
 	viewMatrix = camera->BuildViewMatrix();
 
 	waterSurface->Update(totalTime);
 
-	sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(-3.0f * deltaTime, Vector3(0, 1, 0)));
-	earth->SetTransform(earth->GetTransform() * Matrix4::Rotation(-4.5f * deltaTime, Vector3(0, 1, 0)));
+	//sun->     SetTransform(sun->GetTransform()      * Matrix4::Rotation(-3.0f * deltaTime,  Vector3(0, 1, 0)));
+	earth->   SetTransform(earth->GetTransform()    * Matrix4::Rotation(-4.5f * deltaTime,  Vector3(0, 1, 0)));
+	water->   SetTransform(water->GetTransform()    * Matrix4::Rotation(-1.5f * deltaTime,  Vector3(0, 1, 0)));
 	moonNode->SetTransform(moonNode->GetTransform() * Matrix4::Rotation(-20.0f * deltaTime, Vector3(0, 1, 0)));
-	moon->SetTransform(moon->GetTransform() * Matrix4::Rotation(-90.0f * deltaTime, Vector3(0, 1, 0)));
+	moon->    SetTransform(moon->GetTransform()     * Matrix4::Rotation(-90.0f * deltaTime, Vector3(0, 1, 0)));
 
 	root->Update(deltaTime);
 }
 
 void Renderer::RenderScene() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	BindShader(basicShader);
-	UpdateShaderMatrices();
-	for (int i = 0; i < 3; i++) {
-		axis[i]->Draw();
-	}
-
-	//modelMatrix = Matrix4::Translation(Vector3(0, 0, 0)) * Matrix4::Scale(Vector3(1, 1, 1)) * Matrix4::Rotation(0, Vector3(0, 0, 0));
-	//Vector4 nodeColour = Vector4(1.0f, 0.2f, 0.0f, 1.0f);
-
-	//glUniform1i(glGetUniformLocation(basicShader->GetProgram(), "diffuseTex"), 0);
-	//glUniform1i(glGetUniformLocation(basicShader->GetProgram(), "useTexture"), 1);
-	//glUniform4fv(glGetUniformLocation(basicShader->GetProgram(), "nodeColour"), 1, (float*)&nodeColour);
-
-	//glActiveTexture(GL_TEXTURE0);
-	//glBindTexture(GL_TEXTURE_2D, sunTexture);
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	DrawSkyBox();
 	DrawNode(root);
-	//DrawSkyBox();
 }
 
 void Renderer::DrawSkyBox() {
@@ -148,17 +148,41 @@ void Renderer::DrawSkyBox() {
 
 void Renderer::DrawNode(SceneNode* n) {
 	if (n->GetMesh()) {
-		Matrix4 model = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
-		glUniformMatrix4fv(glGetUniformLocation(basicShader->GetProgram(), "modelMatrix"), 1, false, model.values);
-		glUniform4fv(glGetUniformLocation(basicShader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour());
+		if (n->GetShader() == basicShader) {
+			BindShader(basicShader);
+			UpdateShaderMatrices();
+			Matrix4 model = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
+			glUniformMatrix4fv(glGetUniformLocation(basicShader->GetProgram(), "modelMatrix"), 1, false, model.values);
+			glUniform4fv(glGetUniformLocation(basicShader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour());
 
-		GLuint texture = n->GetTexture();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, n->GetTexture());
+			
+			glUniform1i(glGetUniformLocation(basicShader->GetProgram(), "useTexture"), n->GetTexture());
 
-		glUniform1i(glGetUniformLocation(basicShader->GetProgram(), "useTexture"), texture);
+			n->Draw(*this);
+		}
+		else if (n->GetShader() == lightShader)
+		{
+			BindShader(lightShader);
+			SetShaderLight(*light);
+			UpdateShaderMatrices();
 
-		n->Draw(*this);
+			Matrix4 model = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
+			glUniformMatrix4fv(glGetUniformLocation(lightShader->GetProgram(), "modelMatrix"), 1, false, model.values);
+			
+			glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "diffuseTex"), 0);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, n->GetTexture());
+
+			/*glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "bumpTex"), 1);
+			glActiveTexture(GL_TEXTURE1);
+			glBindTexture(GL_TEXTURE_2D, earthBump);*/
+
+			glUniform3fv(glGetUniformLocation(lightShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
+
+			n->Draw(*this);
+		}
 	}
 
 	for (vector<SceneNode*>::const_iterator i = n->GetChildIteratorStart(); i != n->GetChildIteratorEnd(); ++i) {
