@@ -9,9 +9,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	earthTexture = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 	waterTexture = SOIL_load_OGL_texture(TEXTUREDIR"water.tga", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 	moonTexture = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	cubeMap = SOIL_load_OGL_cubemap(TEXTUREDIR"uni_west.jpg", TEXTUREDIR"uni_east.jpg",
+	cubeMap = SOIL_load_OGL_cubemap(TEXTUREDIR"uni_east.jpg", TEXTUREDIR"uni_west.jpg",
 		TEXTUREDIR"uni_top.jpg", TEXTUREDIR"uni_bot.jpg",
-		TEXTUREDIR"uni_south.jpg", TEXTUREDIR"uni_north.jpg",
+		TEXTUREDIR"uni_north.jpg", TEXTUREDIR"uni_south.jpg",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
 	//earthBump = SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
@@ -34,10 +34,9 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	}
 
 	quad = Mesh::GenerateQuad();
-	sphere = new Sphere(15.0, 2, false);
+	sphere = new Sphere(15.0, 2);
 	earthSurface = Sphere::GenHeightMap();
-	skySurface = new Sphere(15.0, 8, true);
-	waterSurface = Sphere::GenWaterWave(15.0, 6);
+	waterSurface = Sphere::GenWaterWave(15.0, 2);
 	root = new SceneNode();
 
 	sun = new SceneNode(sphere, Vector4(1, 1, 1, 1));
@@ -58,17 +57,15 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	earth->SetShader(lightShader);
 	sun->AddChild(earth);
 
-	waterNode = new SceneNode();
-	earth->AddChild(waterNode);
-
 	water = new SceneNode(waterSurface, Vector4(1, 1, 1, 1));
 	water->SetMesh(waterSurface);
+	//water->SetMesh(0);
 	water->SetColour(Vector4(1.0, 1.0, 1.0, 1.0));
 	water->SetModelScale(Vector3(42, 42, 42));
 	water->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
 	water->SetTexture(waterTexture);
 	water->SetShader(lightShader);
-	waterNode->AddChild(water);
+	earth->AddChild(water);
 
 	moonNode = new SceneNode();
 	earth->AddChild(moonNode);
@@ -97,7 +94,6 @@ Renderer::~Renderer(void) {
 	delete sphere;
 	delete earthSurface;
 	delete waterSurface;
-	delete skySurface;
 
 	delete root;
 
@@ -122,11 +118,11 @@ void Renderer::UpdateScene(float deltaTime, float totalTime) {
 
 	waterSurface->Update(totalTime);
 
-	//sun->     SetTransform(sun->GetTransform()      * Matrix4::Rotation(-3.0f * deltaTime,  Vector3(0, 1, 0)));
-	earth->   SetTransform(earth->GetTransform()    * Matrix4::Rotation(-4.5f * deltaTime,  Vector3(0, 1, 0)));
-	water->   SetTransform(water->GetTransform()    * Matrix4::Rotation(-1.5f * deltaTime,  Vector3(0, 1, 0)));
+	sun->     SetTransform(sun->GetTransform()      * Matrix4::Rotation(-1.0f * deltaTime,  Vector3(0, 1, 0)));
+	earth->   SetTransform(earth->GetTransform()    * Matrix4::Rotation(-7.5f * deltaTime,  Vector3(0, 1, 0)));
+	water->   SetTransform(water->GetTransform()    * Matrix4::Rotation(-4.5f * deltaTime,  Vector3(0, 1, 0)));
 	moonNode->SetTransform(moonNode->GetTransform() * Matrix4::Rotation(-20.0f * deltaTime, Vector3(0, 1, 0)));
-	moon->    SetTransform(moon->GetTransform()     * Matrix4::Rotation(-90.0f * deltaTime, Vector3(0, 1, 0)));
+	moon->    SetTransform(moon->GetTransform()     * Matrix4::Rotation(-45.0f * deltaTime, Vector3(0, 1, 0)));
 
 	root->Update(deltaTime);
 }

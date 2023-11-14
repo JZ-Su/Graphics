@@ -95,6 +95,8 @@ public:
 	static Mesh* GenerateZAxis();
 
 protected:
+	friend class SphereHeightMap;
+
 	void	BufferData();
 
 	GLuint	arrayObject;

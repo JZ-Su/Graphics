@@ -19,14 +19,12 @@ protected:
 	SceneNode* root;
 	SceneNode* sun;
 	SceneNode* earth;
-	SceneNode* waterNode;
 	SceneNode* water;
 	SceneNode* moonNode;
 	SceneNode* moon;
 
 	Sphere*	sphere;
 	Sphere* earthSurface;
-	Sphere* skySurface;
 	Sphere* waterSurface;
 
 	GLuint  cubeMap;
