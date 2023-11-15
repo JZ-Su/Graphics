@@ -7,11 +7,11 @@ public:
 	SphereHeightMap();
 	~SphereHeightMap() {};
 
-	std::vector<Mesh*>::const_iterator GetMeshIteratorStart() { return heightMesh.begin(); }
-	std::vector<Mesh*>::const_iterator GetMeshIteratorEnd() { return heightMesh.end(); }
-
-	void Draw();
+	std::vector<Mesh*> GetMesh() const { return heightMesh; }
 
 protected:
+	Mesh* GenSmallMesh(Vector3 A, Vector3 C, Vector3 B, Vector2 texCoordA, Vector2 texCoordC, Vector2 texCoordB, bool isPole);
+	Vector3 ResetRadius(Vector3 CartesianCoord, float dRadius);
 	std::vector<Mesh*> heightMesh;
+
 };

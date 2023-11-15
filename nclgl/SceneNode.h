@@ -3,6 +3,7 @@
 #include "Vector3.h"
 #include "Vector4.h"
 #include "Mesh.h"
+#include "SphereHeightMap.h"
 #include "Shader.h"
 #include <vector>
 

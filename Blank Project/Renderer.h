@@ -2,6 +2,7 @@
 #include "../NCLGL/OGLRenderer.h"
 class Camera;
 class Sphere;
+class SphereHeightMap;
 class SceneNode;
 
 class Renderer : public OGLRenderer	{
@@ -13,8 +14,11 @@ public:
 
 	 void DrawNode(SceneNode* n);
 	 void DrawSkyBox();
+
+	 void UpdateProjMatrix(float wheelMovement);
 protected:
 	Camera* camera;
+	float fov;
 
 	SceneNode* root;
 	SceneNode* sun;
@@ -24,7 +28,7 @@ protected:
 	SceneNode* moon;
 
 	Sphere*	sphere;
-	Sphere* earthSurface;
+	SphereHeightMap* earthSurface;
 	Sphere* waterSurface;
 
 	GLuint  cubeMap;
