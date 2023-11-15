@@ -131,7 +131,7 @@ void Sphere::Update(float totalTime) {
 			int offset = z * (theta + 1) + x;
 			Vector3 polorCoord = CartesianToPolorCoord(vertices[offset]);
 			if (x == 0 || x == 1) {
-				polorCoord.x += 0.00025 * (sin(totalTime + PI / 2));
+				polorCoord.x += 0.00005 * (sin(totalTime + PI / 2));
 				vertices[offset] = PolorToCartesianCoord(polorCoord);
 			}
 			else {

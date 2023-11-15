@@ -1,6 +1,6 @@
 #include "SphereHeightMap.h"
 
-SphereHeightMap::SphereHeightMap() : Sphere(15.0, 40) {
+SphereHeightMap::SphereHeightMap() : Sphere(15.0, 300) {
 	int theta = 180 / this->degree;
 	int phi = 360 / this->degree;
 	float hei = this->radius;
@@ -227,6 +227,16 @@ Mesh* SphereHeightMap::GenSmallMesh(Vector3 A, Vector3 C, Vector3 B, Vector2 tex
 		case 189: case 205: case 212: hei = -0.03; break;
 		case 191: case 207: case 213: hei = -0.01; break;
 		case 173: case 183: case 193: case 200: case 208: case 214: case 220: hei = 0.0; break;
+
+		case 0:   case 1:   case 2:   case 3:   case 4:   case 5:   case 6:   case 7:   case 8:   case 9:   case 10:  case 11:
+		case 12:  case 13:  case 14:  case 15:  case 16:  case 17:  case 18:  case 19:  case 20:  case 21:  case 40:  case 41:
+		case 59:  case 60:  case 77:  case 78:  case 94:  case 95:  case 110: case 111: case 125: case 126: case 139: case 140:
+		case 152: case 153: case 164: case 165: case 175: case 176: case 185: case 186: case 195: case 202: case 203: case 209:
+		case 210: case 215: case 216: case 221: case 224: case 225: case 227: case 228: case 229: case 230: 
+			if (!isPole) {
+				m->vertices[i] = ResetRadius(m->vertices[i], -0.0075);
+			}
+			break;
 
 		default:
 			break;

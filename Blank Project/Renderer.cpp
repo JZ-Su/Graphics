@@ -98,16 +98,22 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	moonNode->AddChild(moon);
 
 	//camera = new Camera(-90.0f, 0.0f, Vector3(0, 45, 800));
-	camera = new Camera(-30.0f, -15.0f, Vector3(-800, 300, 800));
-	light = new Light(Vector3(0, 0, 0), Vector4(1, 1, 1, 1), 2000.0f);
+	cameraPosition = Vector3(0, 50, 850);
+	cameraYaw = 0.0f;
+	cameraPitch = -15.0f;
+	camera = new Camera(cameraPitch, cameraYaw, cameraPosition);
+
 	fov = 10.0f;
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, fov);
+
+	light = new Light(Vector3(0, 0, 0), Vector4(1, 1, 1, 1), 1000.0f);
 
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	freeCamera = false;
 	init = true;
 }
 
@@ -141,16 +147,25 @@ void Renderer::UpdateProjMatrix(float df) {
 }
 
 void Renderer::UpdateScene(float deltaTime, float totalTime) {
-	camera->UpdateCamera(deltaTime);
+	if (freeCamera) {
+		camera->UpdateCamera(deltaTime);
+	}
+	else {
+		camera->AutoCamera(cameraPosition, cameraPitch, cameraYaw);
+	}
 	viewMatrix = camera->BuildViewMatrix();
-	//std::cout << "Camera Position: " << camera->GetPosition() << " Pit: " << camera->GetPitch() << " Yaw: " << camera->GetYaw() << std::endl;
 	waterSurface->Update(totalTime);
 
-	//sun->     SetTransform(sun->GetTransform()      * Matrix4::Rotation(-1.0f * deltaTime,  Vector3(0, 1, 0)));
-	//earth->   SetTransform(earth->GetTransform()    * Matrix4::Rotation(-7.5f * deltaTime,  Vector3(0, 1, 0)));
-	//water->   SetTransform(water->GetTransform()    * Matrix4::Rotation(-4.5f * deltaTime,  Vector3(0, 1, 0)));
-	//moonNode->SetTransform(moonNode->GetTransform() * Matrix4::Rotation(-20.0f * deltaTime, Vector3(0, 1, 0)));
-	//moon->    SetTransform(moon->GetTransform()     * Matrix4::Rotation(-45.0f * deltaTime, Vector3(0, 1, 0)));
+	sun->     SetTransform(sun->GetTransform()      * Matrix4::Rotation(-1.0f * deltaTime,  Vector3(0, 1, 0)));
+	earth->   SetTransform(earth->GetTransform()    * Matrix4::Rotation(-7.5f * deltaTime,  Vector3(0, 1, 0)));
+	water->   SetTransform(water->GetTransform()    * Matrix4::Rotation(-4.5f * deltaTime,  Vector3(0, 1, 0)));
+	moonNode->SetTransform(moonNode->GetTransform() * Matrix4::Rotation(-20.0f * deltaTime, Vector3(0, 1, 0)));
+	moon->    SetTransform(moon->GetTransform()     * Matrix4::Rotation(-45.0f * deltaTime, Vector3(0, 1, 0)));
+	cameraPosition = Vector3(-800 * sin(6.285 / 360.0 * totalTime), 43, 800 * cos(6.285 / 360.0 * totalTime));
+	cameraYaw -= deltaTime;
+	if (cameraYaw <= 0.0f) {
+		cameraYaw += 360.0f;
+	}
 
 	root->Update(deltaTime);
 }

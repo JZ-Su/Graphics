@@ -29,6 +29,8 @@ public:
 	float	GetPitch() const	{ return pitch; }
 	void	SetPitch(float p)	{ pitch = p; }
 
+	void AutoCamera(Vector3 position, float pitch, float yaw);
+
 private:
 	float yaw;
 	float pitch;

@@ -16,9 +16,15 @@ public:
 	 void DrawSkyBox();
 
 	 void UpdateProjMatrix(float wheelMovement);
+
+	 bool freeCamera;
+
 protected:
 	Camera* camera;
-	float fov;
+	Vector3 cameraPosition;
+	float   cameraYaw;
+	float   cameraPitch;
+	float   fov;
 
 	SceneNode* root;
 	SceneNode* sun;
