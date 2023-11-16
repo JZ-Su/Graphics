@@ -479,6 +479,62 @@ Mesh* Mesh::GenerateQuad() {
 	return m;
 }
 
+Mesh* Mesh::GenerateHexagon() {
+	Mesh* m = new Mesh();
+	m->type = GL_TRIANGLE_FAN;
+	m->numVertices = 8;
+
+	m->vertices = new Vector3[m->numVertices];
+	m->colours = new Vector4[m->numVertices];
+	m->textureCoords = new Vector2[m->numVertices];
+
+	m->vertices[0] = Vector3(   0, 0, 0);
+	m->vertices[1] = Vector3( 1.0, 0, 0);
+	m->vertices[2] = Vector3( 0.5, sqrt(3) / 2, 0);
+	m->vertices[3] = Vector3(-0.5, sqrt(3) / 2, 0);
+	m->vertices[4] = Vector3(-1.0, 0, 0);
+	m->vertices[5] = Vector3(-0.5, -sqrt(3) / 2, 0);
+	m->vertices[6] = Vector3( 0.5, -sqrt(3) / 2, 0);
+	m->vertices[7] = Vector3( 1.0, 0, 0);
+
+	m->textureCoords[0] = Vector2(0, 0);
+	m->textureCoords[1] = Vector2(1.0, 0);
+	m->textureCoords[2] = Vector2(0.5, sqrt(3) / 2);
+	m->textureCoords[3] = Vector2(-0.5, sqrt(3) / 2);
+	m->textureCoords[4] = Vector2(-1.0, 0);
+	m->textureCoords[5] = Vector2(-0.5, -sqrt(3) / 2);
+	m->textureCoords[6] = Vector2(0.5, -sqrt(3) / 2);
+	m->textureCoords[7] = Vector2(1.0, 0);
+
+	for (int i = 0; i < 8; i++) {
+		m->colours[i] = Vector4(1, 1, 1, 1);
+	}
+	m->BufferData();
+	return m;
+}
+
+Mesh* Mesh::GenerateCircle(float dDegree) {
+	Mesh* m = new Mesh();
+	m->numVertices = (360.0 / dDegree) + 2;
+	m->type = GL_TRIANGLE_FAN;
+
+	m->vertices = new Vector3[m->numVertices];
+	m->colours = new Vector4[m->numVertices];
+	m->textureCoords = new Vector2[m->numVertices];
+
+	m->vertices[0] = Vector3(0, 0, 0);
+	m->colours[0] = Vector4(1, 1, 1, 1);
+	m->textureCoords[0] = Vector2(0, 0);
+
+	for (int i = 0; i < m->numVertices-1; i++) {
+		m->vertices[i + 1] = Vector3(cos(DegToRad(i * dDegree)), sin(DegToRad(i * dDegree)), 0);
+		m->colours[i+1] = Vector4(1, 1, 1, 1);
+		m->textureCoords[i + 1] = Vector2(cos(DegToRad(i * dDegree)), sin(DegToRad(i * dDegree)));
+	}
+	m->BufferData();
+	return m;
+}
+
 bool Mesh::GetVertexIndicesForTri(unsigned int i, unsigned int& a, unsigned int& b, unsigned int& c) const {
 	unsigned int triCount = GetTriCount();
 	if (i >= triCount) {

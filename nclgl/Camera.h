@@ -6,13 +6,20 @@ class Camera
 {
 public:
 	Camera(void) {
+		position = Vector3(0, 0, 0);
 		yaw = 0.0f;
 		pitch = 0.0f;
+		roll = 0.0f;
+		preFrameYaw = 0.0f;
+		preFramePitch = pitch;
 	};
-	Camera(float pitch, float yaw, Vector3 position) {
+	Camera(float pitch, float yaw, float roll, Vector3 position) {
 		this->pitch = pitch;
 		this->yaw = yaw;
+		this->roll = roll;
 		this->position = position;
+		preFrameYaw = yaw;
+		preFramePitch = pitch;
 	};
 	~Camera(void) {};
 
@@ -29,10 +36,20 @@ public:
 	float	GetPitch() const	{ return pitch; }
 	void	SetPitch(float p)	{ pitch = p; }
 
-	void AutoCamera(Vector3 position, float pitch, float yaw);
+	float   GetRoll() const     { return roll; }
+	void    SetRoll(float r)    { roll = r; }
+
+	float   GetDeltaYaw() const      { return yaw - preFrameYaw; }
+	float   GetDeltaPitch() const    { return pitch - preFramePitch; }
+
+	void AutoCamera(Vector3 position, float pitch, float yaw, float roll);
 
 private:
 	float yaw;
 	float pitch;
+	float roll;
 	Vector3 position;
+
+	float preFrameYaw;
+	float preFramePitch;
 };

@@ -1,8 +1,8 @@
 #include "Renderer.h"
-#include "../nclgl/Sphere.h"
 #include "../nclgl/Camera.h"
 #include "../nclgl/SceneNode.h"
 #include "../nclgl/Light.h"
+#include "../nclgl/Sphere.h"
 #include "../nclgl/SphereHeightMap.h"
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
@@ -29,12 +29,20 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	basicShader   = new Shader("SceneVertex.glsl"    , "SceneFragment.glsl"   );
 	skyboxShader  = new Shader("skyboxVertex.glsl"   , "skyboxFragment.glsl"  );
 	lightShader   = new Shader("PerPixelVertex.glsl" , "PerPixelFragment.glsl");
+	holaShader    = new Shader("holaVertex.glsl"     , "holaFragment.glsl"    );
 	//lightShader   = new Shader("BumpVertex.glsl"     , "BumpFragment.glsl"    );
-	if (!basicShader->LoadSuccess() || !skyboxShader->LoadSuccess() || !lightShader->LoadSuccess()) {
+	if (!basicShader->LoadSuccess() || !skyboxShader->LoadSuccess() || !lightShader->LoadSuccess() || !holaShader->LoadSuccess()) {
 		return;
 	}
 
+	autoCameraPosition = Vector3(0, 50, 850);
+	autoCameraYaw = 0.0f;
+	autoCameraPitch = -15.0f;
+	autoCameraRoll = 0.0f;
+	camera = new Camera(autoCameraPitch, autoCameraYaw, autoCameraRoll, autoCameraPosition);
+
 	quad = Mesh::GenerateQuad();
+	hexagon = Mesh::GenerateCircle(10.0);
 	sphere = new Sphere(15.0, 2);
 	//earthSurface = Sphere::GenHeightMap();
 	earthSurface = new SphereHeightMap();
@@ -64,10 +72,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 		s->SetMesh(earthSurface->GetMesh()[i]);
 		s->SetColour(Vector4(1.0, 1.0, 1.0, 1.0));
 		s->SetModelScale(Vector3(40, 40, 40));
-		s->SetShader(lightShader);
-
-		//s->SetShader(basicShader);
-		
+		s->SetShader(lightShader);		
 		s->SetTexture(earthTexture);
 		s->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
 		earth->AddChild(s);
@@ -75,9 +80,6 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 
 	water = new SceneNode(waterSurface, Vector4(1, 1, 1, 1));
 	water->SetMesh(waterSurface);
-
-	//water->SetMesh(0);
-
 	water->SetColour(Vector4(1.0, 1.0, 1.0, 1.0));
 	water->SetModelScale(Vector3(41, 41, 41));
 	water->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
@@ -97,11 +99,19 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	moon->SetShader(lightShader);
 	moonNode->AddChild(moon);
 
-	//camera = new Camera(-90.0f, 0.0f, Vector3(0, 45, 800));
-	cameraPosition = Vector3(0, 50, 850);
-	cameraYaw = 0.0f;
-	cameraPitch = -15.0f;
-	camera = new Camera(cameraPitch, cameraYaw, cameraPosition);
+	HOLA = new SceneNode();
+	root->AddChild(HOLA);
+
+	for (int i = 0; i < 4; i++) {
+		SceneNode* hola = new SceneNode();
+		hola->SetMesh(hexagon);
+		hola->SetColour(Vector4(1, 1, 1, 0.1));
+		hola->SetTransform(Matrix4::Translation(autoCameraPosition * 0.3 * i));
+		hola->SetModelScale(Vector3(217 - 138 * i + 23 * i * i, 217 - 138 * i + 23 * i * i, 217 - 138 * i + 23 * i * i));
+		//hola->SetModelScale(Vector3(7 * (4 - i), 7 * (4 - i), 7 * (4 - i)));
+		hola->SetShader(holaShader);
+		HOLA->AddChild(hola);
+	}
 
 	fov = 10.0f;
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, fov);
@@ -113,7 +123,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-	freeCamera = false;
+	freeCamera = true;
 	init = true;
 }
 
@@ -151,7 +161,7 @@ void Renderer::UpdateScene(float deltaTime, float totalTime) {
 		camera->UpdateCamera(deltaTime);
 	}
 	else {
-		camera->AutoCamera(cameraPosition, cameraPitch, cameraYaw);
+		camera->AutoCamera(autoCameraPosition, autoCameraPitch, autoCameraYaw, autoCameraRoll);
 	}
 	viewMatrix = camera->BuildViewMatrix();
 	waterSurface->Update(totalTime);
@@ -161,17 +171,30 @@ void Renderer::UpdateScene(float deltaTime, float totalTime) {
 	water->   SetTransform(water->GetTransform()    * Matrix4::Rotation(-4.5f * deltaTime,  Vector3(0, 1, 0)));
 	moonNode->SetTransform(moonNode->GetTransform() * Matrix4::Rotation(-20.0f * deltaTime, Vector3(0, 1, 0)));
 	moon->    SetTransform(moon->GetTransform()     * Matrix4::Rotation(-45.0f * deltaTime, Vector3(0, 1, 0)));
-	cameraPosition = Vector3(-800 * sin(6.285 / 360.0 * totalTime), 43, 800 * cos(6.285 / 360.0 * totalTime));
-	cameraYaw -= deltaTime;
-	if (cameraYaw <= 0.0f) {
-		cameraYaw += 360.0f;
+	autoCameraPosition = Vector3(-800 * sin(6.285 / 360.0 * totalTime), 43, 800 * cos(6.285 / 360.0 * totalTime));
+	autoCameraYaw -= deltaTime;
+	if (autoCameraYaw <= 0.0f) {
+		autoCameraYaw += 360.0f;
 	}
+	
+	//float p = asin(camera->GetPosition().y / sqrt(camera->GetPosition().Length()));
+	//float y = atan2(camera->GetPosition().x, camera->GetPosition().z);
+	//float r = atan2(camera->GetPosition().y, camera->GetPosition().x);
+	//HOLA->SetTransform(HOLA->GetTransform() * Matrix4::Rotation(p, Vector3(1, 0, 0))
+	//	* Matrix4::Rotation(y, Vector3(0, 1, 0)) * Matrix4::Rotation(r, Vector3(0, 0, 1)));
+	HOLA->SetTransform(HOLA->GetTransform() * Matrix4::Rotation(-camera->GetDeltaPitch(), Vector3(1, 0, 0)) * Matrix4::Rotation(-camera->GetDeltaYaw(), Vector3(0, 1, 0)));
 
 	root->Update(deltaTime);
 }
 
 void Renderer::RenderScene() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, width, height);
+	DrawSkyBox();
+	DrawNode(root);
+	
+	glViewport(0, 0, width / 3, height / 3);
+	glClear(GL_DEPTH_BUFFER_BIT);
 	DrawSkyBox();
 	DrawNode(root);
 }
@@ -201,8 +224,7 @@ void Renderer::DrawNode(SceneNode* n) {
 
 			n->Draw(*this);
 		}
-		else if (n->GetShader() == lightShader)
-		{
+		else if (n->GetShader() == lightShader) {
 			BindShader(lightShader);
 			SetShaderLight(*light);
 			UpdateShaderMatrices();
@@ -222,9 +244,24 @@ void Renderer::DrawNode(SceneNode* n) {
 
 			n->Draw(*this);
 		}
+		else if (n->GetShader() == holaShader) {
+			BindShader(holaShader);
+			UpdateShaderMatrices();
+			Matrix4 model = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
+			glUniformMatrix4fv(glGetUniformLocation(holaShader->GetProgram(), "modelMatrix"), 1, false, model.values);
+			glUniform4fv(glGetUniformLocation(holaShader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour());
+
+			n->Draw(*this);
+		}
 	}
 
 	for (vector<SceneNode*>::const_iterator i = n->GetChildIteratorStart(); i != n->GetChildIteratorEnd(); ++i) {
 		DrawNode(*i);
 	}
+}
+
+void Renderer::renderscene() {
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	DrawSkyBox();
+	DrawNode(root);
 }

@@ -2,9 +2,25 @@
 #include "Window.h"
 #include <algorithm>
 void Camera::UpdateCamera(float dt) {
+	preFramePitch = pitch;
+	preFrameYaw = yaw;
+
 	if (Window::GetMouse()->ButtonHeld(MOUSE_LEFT)) {
 		pitch -= (Window::GetMouse()->GetRelativePosition().y);
 		yaw -= (Window::GetMouse()->GetRelativePosition().x);
+	}
+
+	if (Window::GetKeyboard()->KeyDown(KEYBOARD_Q)) {
+		roll -= 100.0f * dt;
+	}
+	if (Window::GetKeyboard()->KeyDown(KEYBOARD_E)) {
+		roll += 100.0f * dt;
+	}
+	if (roll < 0) {
+		roll += 360.0f;
+	}
+	if (roll > 360.0f) {
+		roll -= 360.0f;
 	}
 
 	pitch = std::min(pitch, 90.0f);
@@ -17,9 +33,10 @@ void Camera::UpdateCamera(float dt) {
 		yaw -= 360.0f;
 	}
 
-	Matrix4 rotation = Matrix4::Rotation(yaw, Vector3(0, 1, 0));
+	Matrix4 rotation = Matrix4::Rotation(-pitch, Vector3(1, 0, 0)) * Matrix4::Rotation(-roll, Vector3(0, 0, -1)) * Matrix4::Rotation(yaw, Vector3(0, 1, 0));
 	Vector3 forward = rotation * Vector3(0, 0, -1);
 	Vector3 right = rotation * Vector3(1, 0, 0);
+	Vector3 up = rotation * Vector3(0, 1, 0);
 
 	float speed = 100.0f * dt;
 
@@ -37,19 +54,23 @@ void Camera::UpdateCamera(float dt) {
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KEYBOARD_SHIFT)) {
-		position.y += 0.5 * speed;
+		position += up * speed;
 	}
 	if (Window::GetKeyboard()->KeyDown(KEYBOARD_SPACE)) {
-		position.y -= 0.5 * speed;
+		position -= up * speed;
 	}
 }
 
 Matrix4 Camera::BuildViewMatrix() {
-	return Matrix4::Rotation(-pitch, Vector3(1, 0, 0)) * Matrix4::Rotation(-yaw, Vector3(0, 1, 0)) * Matrix4::Translation(-position);
+	return  Matrix4::Rotation(-pitch, Vector3(1, 0, 0)) * Matrix4::Rotation(-yaw, Vector3(0, 1, 0))
+		 * Matrix4::Rotation(-roll, Vector3(0, 0, 1)) * Matrix4::Translation(-position);
 }
 
-void Camera::AutoCamera(Vector3 position, float pitch, float yaw) {
-	//this->pitch = pitch;
-	this->yaw = yaw;
+void Camera::AutoCamera(Vector3 position, float pitch, float yaw, float roll) {
+	this->preFrameYaw = yaw;
+	this->preFramePitch = pitch;
 	this->position = position;
+	this->pitch = pitch;
+	this->yaw = yaw;
+	this->roll = roll;
 }

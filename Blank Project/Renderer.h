@@ -10,6 +10,7 @@ public:
 	Renderer(Window &parent);
 	 ~Renderer(void);
 	 void RenderScene()				override;
+	 void renderscene();
 	 void UpdateScene(float deltaTime, float totalTime);
 
 	 void DrawNode(SceneNode* n);
@@ -21,9 +22,10 @@ public:
 
 protected:
 	Camera* camera;
-	Vector3 cameraPosition;
-	float   cameraYaw;
-	float   cameraPitch;
+	Vector3 autoCameraPosition;
+	float   autoCameraYaw;
+	float   autoCameraPitch;
+	float   autoCameraRoll;
 	float   fov;
 
 	SceneNode* root;
@@ -32,6 +34,7 @@ protected:
 	SceneNode* water;
 	SceneNode* moonNode;
 	SceneNode* moon;
+	SceneNode* HOLA;
 
 	Sphere*	sphere;
 	SphereHeightMap* earthSurface;
@@ -40,6 +43,7 @@ protected:
 	GLuint  cubeMap;
 	Shader* skyboxShader;
 	Shader* basicShader;
+	Shader* holaShader;
 
 	Light*  light;
 	Shader* lightShader;
@@ -51,4 +55,5 @@ protected:
 	GLuint  earthBump;
 
 	Mesh*   quad;
+	Mesh*   hexagon;
 };
