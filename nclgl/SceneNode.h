@@ -49,6 +49,10 @@ public:
 	static bool CompareByCameraDistance(SceneNode* a, SceneNode* b) {
 		return (a->distanceFromCamera < b->distanceFromCamera) ? true : false;
 	}
+
+	void SetPreviousPosition(Vector3 p) { previousPosition = p; }
+	Vector3 GetPreviousPosition() const { return previousPosition; }
+
 protected:
 	SceneNode* parent;
 	Mesh* mesh;
@@ -62,5 +66,7 @@ protected:
 	float boundingRadius;
 	GLuint texture;
 	Shader* shader;
+
+	Vector3 previousPosition;
 };
 

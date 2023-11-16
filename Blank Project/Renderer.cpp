@@ -21,15 +21,15 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 		return;
 	}
 
-	SetTextureRepeating(sunTexture,   true);
+	SetTextureRepeating(sunTexture, true);
 	SetTextureRepeating(earthTexture, true);
 	SetTextureRepeating(waterTexture, true);
-	SetTextureRepeating(moonTexture,  true);
+	SetTextureRepeating(moonTexture, true);
 
-	basicShader   = new Shader("SceneVertex.glsl"    , "SceneFragment.glsl"   );
-	skyboxShader  = new Shader("skyboxVertex.glsl"   , "skyboxFragment.glsl"  );
-	lightShader   = new Shader("PerPixelVertex.glsl" , "PerPixelFragment.glsl");
-	holaShader    = new Shader("holaVertex.glsl"     , "holaFragment.glsl"    );
+	basicShader = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
+	skyboxShader = new Shader("skyboxVertex.glsl", "skyboxFragment.glsl");
+	lightShader = new Shader("PerPixelVertex.glsl", "PerPixelFragment.glsl");
+	holaShader = new Shader("holaVertex.glsl", "holaFragment.glsl");
 	//lightShader   = new Shader("BumpVertex.glsl"     , "BumpFragment.glsl"    );
 	if (!basicShader->LoadSuccess() || !skyboxShader->LoadSuccess() || !lightShader->LoadSuccess() || !holaShader->LoadSuccess()) {
 		return;
@@ -72,7 +72,7 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 		s->SetMesh(earthSurface->GetMesh()[i]);
 		s->SetColour(Vector4(1.0, 1.0, 1.0, 1.0));
 		s->SetModelScale(Vector3(40, 40, 40));
-		s->SetShader(lightShader);		
+		s->SetShader(lightShader);
 		s->SetTexture(earthTexture);
 		s->SetTransform(Matrix4::Translation(Vector3(0, 0, 0)));
 		earth->AddChild(s);
@@ -117,6 +117,8 @@ Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
 	projMatrix = Matrix4::Perspective(1.0f, 10000.0f, (float)width / (float)height, fov);
 
 	light = new Light(Vector3(0, 0, 0), Vector4(1, 1, 1, 1), 1000.0f);
+	cameraSpeed = 100.0f;
+	earth->SetPreviousPosition(earth->GetTransform().GetPositionVector());
 
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_CULL_FACE);
@@ -158,7 +160,17 @@ void Renderer::UpdateProjMatrix(float df) {
 
 void Renderer::UpdateScene(float deltaTime, float totalTime) {
 	if (freeCamera) {
-		camera->UpdateCamera(deltaTime);
+		if ((camera->GetPosition() - earth->GetWorldTransform().GetPositionVector()).Length() < 60) {
+			//camera->AutoCamera(Matrix4::Rotation(-PI / 360.0 * totalTime, Vector3(0, 1, 0)) * camera->GetPrePosition(),
+			//	camera->GetPitch(), camera->GetYaw(), camera->GetRoll());
+			camera->AutoCamera(camera->GetPosition() + earth->GetWorldTransform().GetPositionVector() - earth->GetPreviousPosition(),
+				camera->GetPitch(), camera->GetYaw(), camera->GetRoll());
+			cameraSpeed = 10.0f;
+		}
+		else {
+			cameraSpeed = 100.0f;
+		}
+		camera->UpdateCamera(deltaTime, cameraSpeed);
 	}
 	else {
 		camera->AutoCamera(autoCameraPosition, autoCameraPitch, autoCameraYaw, autoCameraRoll);
@@ -166,22 +178,41 @@ void Renderer::UpdateScene(float deltaTime, float totalTime) {
 	viewMatrix = camera->BuildViewMatrix();
 	waterSurface->Update(totalTime);
 
-	sun->     SetTransform(sun->GetTransform()      * Matrix4::Rotation(-1.0f * deltaTime,  Vector3(0, 1, 0)));
-	earth->   SetTransform(earth->GetTransform()    * Matrix4::Rotation(-7.5f * deltaTime,  Vector3(0, 1, 0)));
-	water->   SetTransform(water->GetTransform()    * Matrix4::Rotation(-4.5f * deltaTime,  Vector3(0, 1, 0)));
+	sun->SetTransform(sun->GetTransform() * Matrix4::Rotation(-1.0f * deltaTime, Vector3(0, 1, 0)));
+	earth->SetPreviousPosition(earth->GetWorldTransform().GetPositionVector());
+	earth->SetTransform(earth->GetTransform() * Matrix4::Rotation(-7.5f * deltaTime, Vector3(0, 1, 0)));
+	water->SetTransform(water->GetTransform() * Matrix4::Rotation(-4.5f * deltaTime, Vector3(0, 1, 0)));
 	moonNode->SetTransform(moonNode->GetTransform() * Matrix4::Rotation(-20.0f * deltaTime, Vector3(0, 1, 0)));
-	moon->    SetTransform(moon->GetTransform()     * Matrix4::Rotation(-45.0f * deltaTime, Vector3(0, 1, 0)));
-	autoCameraPosition = Vector3(-800 * sin(6.285 / 360.0 * totalTime), 43, 800 * cos(6.285 / 360.0 * totalTime));
+	moon->SetTransform(moon->GetTransform() * Matrix4::Rotation(-45.0f * deltaTime, Vector3(0, 1, 0)));
+
+	autoCameraPosition = earth->GetWorldTransform().GetPositionVector() + Vector3(0, 43, 0);;
+	//autoCameraPosition = Vector3(-800 * sin(6.285 / 360.0 * totalTime), 43, 800 * cos(6.285 / 360.0 * totalTime));
 	autoCameraYaw -= deltaTime;
 	if (autoCameraYaw <= 0.0f) {
 		autoCameraYaw += 360.0f;
 	}
-	
-	//float p = asin(camera->GetPosition().y / sqrt(camera->GetPosition().Length()));
-	//float y = atan2(camera->GetPosition().x, camera->GetPosition().z);
-	//float r = atan2(camera->GetPosition().y, camera->GetPosition().x);
-	//HOLA->SetTransform(HOLA->GetTransform() * Matrix4::Rotation(p, Vector3(1, 0, 0))
-	//	* Matrix4::Rotation(y, Vector3(0, 1, 0)) * Matrix4::Rotation(r, Vector3(0, 0, 1)));
+
+
+	Vector3 prePosition = camera->GetPrePosition();
+	Vector3 nowPosition = camera->GetPosition();
+
+	float prePitch = RadToDeg(asin(prePosition.y / prePosition.Length()));
+	float preYaw = RadToDeg(atan2(prePosition.z, prePosition.x));
+	float nowPitch = RadToDeg(asin(nowPosition.y / nowPosition.Length()));
+	float nowYaw = RadToDeg(atan2(nowPosition.z, nowPosition.x));
+
+	float deltaPitch = nowPitch - prePitch;
+	float deltaYaw = nowYaw - preYaw;
+	if (deltaPitch || deltaYaw) {
+		HOLA->SetTransform(HOLA->GetTransform() * Matrix4::Rotation(-deltaPitch, Vector3(1, 0, 0)) * Matrix4::Rotation(-deltaYaw, Vector3(0, 1, 0)));
+	}
+	//if (deltaPosition.Length()) {
+	//	float p = RadToDeg(asin(deltaPosition.y / sqrt(deltaPosition.Length())));
+	//	float y = RadToDeg(atan2(deltaPosition.x, deltaPosition.z));
+	//	float r = RadToDeg(atan2(deltaPosition.y, deltaPosition.x));
+	//	HOLA->SetTransform(HOLA->GetTransform() * Matrix4::Rotation(-y / 360, Vector3(1, 0, 0)) * Matrix4::Rotation(-p / 360, Vector3(0, 1, 0))
+	//		 * Matrix4::Rotation(-r / 360, Vector3(0, 0, 1)));
+	//}
 	HOLA->SetTransform(HOLA->GetTransform() * Matrix4::Rotation(-camera->GetDeltaPitch(), Vector3(1, 0, 0)) * Matrix4::Rotation(-camera->GetDeltaYaw(), Vector3(0, 1, 0)));
 
 	root->Update(deltaTime);
@@ -192,7 +223,7 @@ void Renderer::RenderScene() {
 	glViewport(0, 0, width, height);
 	DrawSkyBox();
 	DrawNode(root);
-	
+
 	glViewport(0, 0, width / 3, height / 3);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	DrawSkyBox();
@@ -219,7 +250,7 @@ void Renderer::DrawNode(SceneNode* n) {
 
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, n->GetTexture());
-			
+
 			glUniform1i(glGetUniformLocation(basicShader->GetProgram(), "useTexture"), n->GetTexture());
 
 			n->Draw(*this);
@@ -231,7 +262,7 @@ void Renderer::DrawNode(SceneNode* n) {
 
 			Matrix4 model = n->GetWorldTransform() * Matrix4::Scale(n->GetModelScale());
 			glUniformMatrix4fv(glGetUniformLocation(lightShader->GetProgram(), "modelMatrix"), 1, false, model.values);
-			
+
 			glUniform1i(glGetUniformLocation(lightShader->GetProgram(), "diffuseTex"), 0);
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, n->GetTexture());

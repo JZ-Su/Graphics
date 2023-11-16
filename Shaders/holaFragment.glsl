@@ -12,7 +12,7 @@ void main(void)	{
 	float radius = sqrt(3) / 2.0;
 	float dStep = (2.0 - sqrt(3)) / 14.0;
 	if (r < radius) {
-		fragColour = vec4(IN.colour.xyz, 0.05);
+		fragColour = vec4(IN.colour.xyz, 0.05 / radius);
 	} else if (r <= radius + 2.0 * dStep) {
 		fragColour = vec4(1.0, (r - radius) / dStep / 2.0, 0.0, IN.colour.w);
 	} else if (r <= radius + 3.0 * dStep) {

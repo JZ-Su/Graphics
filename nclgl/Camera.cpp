@@ -1,9 +1,10 @@
 #include "Camera.h"
 #include "Window.h"
 #include <algorithm>
-void Camera::UpdateCamera(float dt) {
-	preFramePitch = pitch;
-	preFrameYaw = yaw;
+void Camera::UpdateCamera(float dt, float speed) {
+	previousPosition = position;
+	previousPitch    = pitch;
+	previousYaw      = yaw;
 
 	if (Window::GetMouse()->ButtonHeld(MOUSE_LEFT)) {
 		pitch -= (Window::GetMouse()->GetRelativePosition().y);
@@ -38,7 +39,7 @@ void Camera::UpdateCamera(float dt) {
 	Vector3 right = rotation * Vector3(1, 0, 0);
 	Vector3 up = rotation * Vector3(0, 1, 0);
 
-	float speed = 100.0f * dt;
+	speed = speed * dt;
 
 	if (Window::GetKeyboard()->KeyDown(KEYBOARD_W)) {
 		position += forward * speed;
@@ -67,10 +68,11 @@ Matrix4 Camera::BuildViewMatrix() {
 }
 
 void Camera::AutoCamera(Vector3 position, float pitch, float yaw, float roll) {
-	this->preFrameYaw = yaw;
-	this->preFramePitch = pitch;
+	this->previousYaw      = this->yaw;
+	this->previousPitch    = this->pitch;
+	this->previousPosition = this->position;
 	this->position = position;
-	this->pitch = pitch;
-	this->yaw = yaw;
-	this->roll = roll;
+	this->pitch    = pitch;
+	this->yaw      = yaw;
+	this->roll     = roll;
 }

@@ -22,6 +22,7 @@ public:
 
 protected:
 	Camera* camera;
+	float   cameraSpeed;
 	Vector3 autoCameraPosition;
 	float   autoCameraYaw;
 	float   autoCameraPitch;
