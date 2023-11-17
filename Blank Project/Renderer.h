@@ -36,10 +36,11 @@ protected:
 	SceneNode* root;
 	SceneNode* sun;
 	SceneNode* earth;
+	SceneNode* sky;
 	SceneNode* water;
 	SceneNode* moonNode;
 	SceneNode* moon;
-	SceneNode* HOLA;
+	SceneNode* HALO;
 
 	Sphere*	sphere;
 	SphereHeightMap* earthSurface;
@@ -59,8 +60,8 @@ protected:
 	GLuint  sunTexture;
 	GLuint  earthTexture;
 	GLuint  waterTexture;
-	GLuint  moonTexture;
 	GLuint  earthBump;
+	GLuint  skyTexture;
 
 	Mesh*   quad;
 	Mesh*   circle;

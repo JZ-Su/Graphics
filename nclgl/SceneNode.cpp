@@ -9,6 +9,8 @@ SceneNode::SceneNode(Mesh* mesh, Vector4 colour) {
 	boundingRadius = 1.0f;
 	distanceFromCamera = 0.0f;
 	texture = 0;
+	bumpTex = 0;
+	shader = nullptr;
 }
 
 SceneNode::~SceneNode(void) {

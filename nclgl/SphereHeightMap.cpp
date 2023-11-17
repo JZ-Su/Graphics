@@ -57,7 +57,7 @@ SphereHeightMap::SphereHeightMap() : Sphere(15.0, 30) {
 		/* Tri:  b-a
 				 |\|
 				 c-d  */
-				 // north pole, Tri bcd
+		// north pole, Tri bcd
 		if ((i - 1) % 24 == 0) {
 			unsigned int b = 0;
 			unsigned int c = 0;

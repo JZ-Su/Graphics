@@ -138,8 +138,8 @@ void Sphere::Update(float totalTime) {
 				switch ((z + x) % 4) {
 				case 0: polorCoord.x += 0.00025 * sin(totalTime + PI / 2);		break;
 				case 1: polorCoord.x += 0.00025 * sin(totalTime + PI);			break;
-				case 2: polorCoord.x -= 0.00025 * sin(totalTime + PI * 3 / 2);	break;
-				case 3: polorCoord.x -= 0.00025 * sin(totalTime);				break;
+				case 2: polorCoord.x += 0.00025 * sin(totalTime + PI * 3 / 2);	break;
+				case 3: polorCoord.x += 0.00025 * sin(totalTime);				break;
 				default: break;
 				}
 				vertices[offset] = PolorToCartesianCoord(polorCoord);

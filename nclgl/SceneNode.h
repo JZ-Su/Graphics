@@ -53,6 +53,9 @@ public:
 	void SetPreviousPosition(Vector3 p) { previousPosition = p; }
 	Vector3 GetPreviousPosition() const { return previousPosition; }
 
+	void SetBumpTex(GLuint bt)  { bumpTex = bt; }
+	GLuint GetBumpTex() const   { return bumpTex; }
+
 protected:
 	SceneNode* parent;
 	Mesh* mesh;
@@ -65,6 +68,7 @@ protected:
 	float distanceFromCamera;
 	float boundingRadius;
 	GLuint texture;
+	GLuint bumpTex;
 	Shader* shader;
 
 	Vector3 previousPosition;
