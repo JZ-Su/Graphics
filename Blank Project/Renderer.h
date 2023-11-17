@@ -21,6 +21,10 @@ public:
 	 bool freeCamera;
 
 protected:
+	void InitScene();
+	void InitShadow();
+	void DrawShadowScene();
+
 	Camera* camera;
 	float   cameraSpeed;
 	Vector3 autoCameraPosition;
@@ -48,6 +52,9 @@ protected:
 
 	Light*  light;
 	Shader* lightShader;
+	GLuint shadowTex;
+	GLuint shadowFBO;
+	Shader* shadowShader;
 
 	GLuint  sunTexture;
 	GLuint  earthTexture;
@@ -56,5 +63,5 @@ protected:
 	GLuint  earthBump;
 
 	Mesh*   quad;
-	Mesh*   hexagon;
+	Mesh*   circle;
 };

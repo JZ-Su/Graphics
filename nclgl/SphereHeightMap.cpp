@@ -1,6 +1,6 @@
 #include "SphereHeightMap.h"
 
-SphereHeightMap::SphereHeightMap() : Sphere(15.0, 300) {
+SphereHeightMap::SphereHeightMap() : Sphere(15.0, 30) {
 	int theta = 180 / this->degree;
 	int phi = 360 / this->degree;
 	float hei = this->radius;

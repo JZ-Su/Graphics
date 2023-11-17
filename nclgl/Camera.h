@@ -45,7 +45,7 @@ public:
 	Vector3 GetDeltaPosition() const { return position - previousPosition; }
 	Vector3 GetPrePosition() const   { return previousPosition; }
 
-	void AutoCamera(Vector3 position, float pitch, float yaw, float roll);
+	void SetCamera(Vector3 position, float pitch, float yaw, float roll);
 
 private:
 	float yaw;

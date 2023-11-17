@@ -67,7 +67,7 @@ Matrix4 Camera::BuildViewMatrix() {
 		 * Matrix4::Rotation(-roll, Vector3(0, 0, 1)) * Matrix4::Translation(-position);
 }
 
-void Camera::AutoCamera(Vector3 position, float pitch, float yaw, float roll) {
+void Camera::SetCamera(Vector3 position, float pitch, float yaw, float roll) {
 	this->previousYaw      = this->yaw;
 	this->previousPitch    = this->pitch;
 	this->previousPosition = this->position;
