@@ -84,17 +84,18 @@ public:
 	bool GetSubMesh(int i, const SubMesh* s) const;
 	bool GetSubMesh(const std::string& name, const SubMesh* s) const;
 
+	void GenerateNormals();
+	bool GetVertexIndicesForTri(unsigned int i, unsigned int& a, unsigned int& b, unsigned int& c) const;
+
+	Vector3* GetNormals() const   { return normals; }
+	Vector4* GetTangents() const  { return tangents; }
+	GLuint GetNumVertices() const { return numVertices; }
+
+	static Mesh* GenerateLine(Vector3 begin, Vector3 end);
 	static Mesh* GenerateTriangle();
 	static Mesh* GenerateQuad();
 	static Mesh* GenerateHexagon();
 	static Mesh* GenerateCircle(float dDegree);
-
-	void GenerateNormals();
-	bool GetVertexIndicesForTri(unsigned int i, unsigned int& a, unsigned int& b, unsigned int& c) const;
-
-	static Mesh* GenerateXAxis();
-	static Mesh* GenerateYAxis();
-	static Mesh* GenerateZAxis();
 
 protected:
 	friend class SphereHeightMap;

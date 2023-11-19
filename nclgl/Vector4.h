@@ -70,6 +70,10 @@ public:
 		return Vector4(x * a, y * a, z * a, w * a);
 	}
 
+	void Output() const {
+		std::cout << "( " << x << ",\t\t" << y << ",\t\t" << z << ",\t\t" << w << " )" << std::endl;
+	}
+
 	~Vector4(void){}
 
 	float x;

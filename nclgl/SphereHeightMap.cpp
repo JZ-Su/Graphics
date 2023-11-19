@@ -147,8 +147,9 @@ Mesh* SphereHeightMap::GenSmallMesh(Vector3 A, Vector3 C, Vector3 B, Vector2 tex
 	for (int y = 0; y <= 20; y++) {
 		for (int x = 0; x <= 20 - y; x++) {
 			//vertices[i] = A + x * stepAC + y * stepAB;
-			m->vertices[verticesIndex] = Vector3(A.x + x * stepAC.x + y * stepAB.x, A.y + x * stepAC.y + y * stepAB.y, A.z + x * stepAC.z + y * stepAB.z);
-			m->textureCoords[verticesIndex] = Vector2(texCoordA.x + x * texstepAC.x + y * texstepAB.x, texCoordA.y + x * texstepAC.y + y * texstepAB.y);
+			m->vertices[verticesIndex] = A + stepAC * x + stepAB * y;
+			m->textureCoords[verticesIndex] = texCoordA + texstepAC * x + texstepAB * y;
+			//m->textureCoords[verticesIndex] = Vector2(texCoordA.x + x * texstepAC.x + y * texstepAB.x, texCoordA.y + x * texstepAC.y + y * texstepAB.y);
 			verticesIndex++;
 		}
 	}
@@ -176,44 +177,6 @@ Mesh* SphereHeightMap::GenSmallMesh(Vector3 A, Vector3 C, Vector3 B, Vector2 tex
 		}
 		verticesIndex++;
 	}
-
-	//if (!isPole) {
-		//for (int i = 0; i < m->numVertices; i++) {
-		//	switch (i)
-		//	{
-		//	case 31: case 32: case 33: case 35: case 36: case 53: m->vertices[i] = SetRadius(m->vertices[i], -0.025); break;
-
-		//	case 39: case 41: case 42: case 43: case 46: case 49: m->vertices[i] = SetRadius(m->vertices[i], -0.05); break;
-
-		//	case 40: case 47: case 48: m->vertices[i] = SetRadius(m->vertices[i], -0.075);
-
-		//	case 14: case 15: case 16:  case 17: case 25: case 57: case 61: m->vertices[i] = SetRadius(m->vertices[i], 0.025); break;
-
-		//	default:
-		//		break;
-		//	}
-		//}
-		//}
-		//else {
-		//	for (int i = 0; i < m->numVertices; i++) {
-		//		switch (i)
-		//		{
-		//		case 0:  case 1:  case 10: case 11: case 20: case 21: case 29: case 30: case 31: case 32:
-		//		case 33: case 35: case 36: case 37: case 51: case 53: case 55: m->vertices[i] = SetRadius(m->vertices[i], -0.0125); break;
-
-		//		case 38: case 39: case 41: case 42: case 43: case 44: case 45: case 46: case 49: case 50: m->vertices[i] = SetRadius(m->vertices[i], -0.025); break;
-
-		//		case 40: case 47: case 48: m->vertices[i] = SetRadius(m->vertices[i], -0.03);
-
-		//		case 3:  case 4:  case 5:  case 6:  case 7:  case 8:  case 14: case 17: case 25: case 57:
-		//		case 60: case 62: case 63: case 64: m->vertices[i] = SetRadius(m->vertices[i], 0.012); break;
-
-		//		case 15: case 16: case 61: m->vertices[i] = SetRadius(m->vertices[i], 0.025);
-		//		default:
-		//			break;
-		//		}
-		//	}
-		//}
 
 	float hei = 0.0;
 	for (int i = 0; i < m->numVertices; i++) {
@@ -251,7 +214,6 @@ Mesh* SphereHeightMap::GenSmallMesh(Vector3 A, Vector3 C, Vector3 B, Vector2 tex
 	m->GenerateTangents();
 	m->BufferData();
 	return m;
-
 }
 
 Vector3 SphereHeightMap::ResetRadius(Vector3 CartesianCoord, float dRadius) {

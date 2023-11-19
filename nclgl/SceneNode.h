@@ -17,7 +17,7 @@ public:
 	const Matrix4& GetTransform()	const { return transform; }
 	Matrix4 GetWorldTransform()		const { return worldTransform; }
 	
-	Vector4 GetColour()				const { return colour; }
+	Vector4 GetColour()	const { return colour; }
 	void SetColour(Vector4 c) { colour = c;}
 
 	Vector3 GetModelScale() const { return modelScale; }
@@ -50,11 +50,11 @@ public:
 		return (a->distanceFromCamera < b->distanceFromCamera) ? true : false;
 	}
 
-	void SetPreviousPosition(Vector3 p) { previousPosition = p; }
-	Vector3 GetPreviousPosition() const { return previousPosition; }
+	void SetPreviousPosition(Vector3 position) { previousPosition = position; }
+	Vector3 GetPreviousPosition() const        { return previousPosition; }
 
-	void SetBumpTex(GLuint bt)  { bumpTex = bt; }
-	GLuint GetBumpTex() const   { return bumpTex; }
+	void SetBumpTex(GLuint bumptex)  { bumpTex = bumptex; }
+	GLuint GetBumpTex() const        { return bumpTex; }
 
 protected:
 	SceneNode* parent;

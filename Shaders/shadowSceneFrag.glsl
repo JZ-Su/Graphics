@@ -6,6 +6,7 @@ uniform vec4 lightColour;
 uniform vec3 lightPos;
 uniform vec3 cameraPos;
 uniform float lightRadius;
+uniform bool useBumpTex;
 
 in Vertex {
 	vec3 colour;
@@ -26,7 +27,11 @@ void main(void) {
 
 	mat3 TBN = mat3(normalize(IN.tangent), normalize(IN.binormal), normalize(IN.normal));
 	vec4 diffuse = texture(diffuseTex, IN.texCoord);
-	vec3 normal = texture(bumpTex, IN.texCoord).rgb;
+
+	vec3 normal = vec3(1, 1, 1);
+	if (useBumpTex) {
+		normal = texture(bumpTex, IN.texCoord).rgb;
+	}
 
 	normal = normalize(TBN * normal * 2.0 - 1.0);
 	

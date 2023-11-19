@@ -29,7 +29,7 @@ int main()	{
 		if (Window::GetKeyboard()->KeyTriggered(KEYBOARD_F)) {
 			renderer.freeCamera = !renderer.freeCamera;
 		}
-		renderer.UpdateProjMatrix(Window::GetMouse()->GetWheelMovement());
+		renderer.UpdateProjMatrixFov(Window::GetMouse()->GetWheelMovement());
 		renderer.UpdateScene(w.GetTimer()->GetTimeDeltaSeconds(), w.GetTimer()->GetTotalTimeSeconds());
 		renderer.RenderScene();
 		renderer.SwapBuffers();

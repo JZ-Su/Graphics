@@ -12,10 +12,10 @@ void Camera::UpdateCamera(float dt, float speed) {
 	}
 
 	if (Window::GetKeyboard()->KeyDown(KEYBOARD_Q)) {
-		roll -= 100.0f * dt;
+		roll += 100.0f * dt;
 	}
 	if (Window::GetKeyboard()->KeyDown(KEYBOARD_E)) {
-		roll += 100.0f * dt;
+		roll -= 100.0f * dt;
 	}
 	if (roll < 0) {
 		roll += 360.0f;

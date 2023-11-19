@@ -10,13 +10,13 @@ public:
 	Renderer(Window &parent);
 	 ~Renderer(void);
 	 void RenderScene()				override;
-	 void renderscene();
 	 void UpdateScene(float deltaTime, float totalTime);
 
 	 void DrawNode(SceneNode* n);
+	 void DrawShadowNode(SceneNode* n);
 	 void DrawSkyBox();
 
-	 void UpdateProjMatrix(float wheelMovement);
+	 void UpdateProjMatrixFov(float wheelMovement);
 
 	 bool freeCamera;
 
@@ -40,29 +40,29 @@ protected:
 	SceneNode* water;
 	SceneNode* moonNode;
 	SceneNode* moon;
-	SceneNode* HALO;
-
-	Sphere*	sphere;
-	SphereHeightMap* earthSurface;
-	Sphere* waterSurface;
-
-	GLuint  cubeMap;
-	Shader* skyboxShader;
-	Shader* basicShader;
-	Shader* holaShader;
-
-	Light*  light;
-	Shader* lightShader;
-	GLuint shadowTex;
-	GLuint shadowFBO;
-	Shader* shadowShader;
-
-	GLuint  sunTexture;
-	GLuint  earthTexture;
-	GLuint  waterTexture;
-	GLuint  earthBump;
-	GLuint  skyTexture;
+	SceneNode* haloNode;
+	SceneNode* halo[5];
 
 	Mesh*   quad;
 	Mesh*   circle;
+	Sphere*	sphere;
+	Sphere* waterSurface;
+	SphereHeightMap* earthSurface;
+
+	Shader* basicShader;
+	Shader* skyboxShader;
+	Shader* shadowShader;
+	Shader* haloShader;
+
+	Light*  light;
+	GLuint  shadowTex;
+	GLuint  shadowFBO;
+
+	GLuint  sunTexture;
+	GLuint  earthTexture;
+	GLuint  skyTexture;
+	GLuint  waterTexture;
+	GLuint  haloTexture;
+	GLuint  bumpTex;
+	GLuint  cubeMap;
 };

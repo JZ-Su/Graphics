@@ -6,7 +6,6 @@ public:
 	Sphere(float degree,int texRepeat);
 	~Sphere(void);
 
-	//static Sphere* GenHeightMap();
 	static Sphere* GenWaterWave(float degree, int texRepeat);
 
 	void Update(float dt);
