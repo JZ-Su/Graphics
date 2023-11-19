@@ -40,6 +40,7 @@ protected:
 	SceneNode* water;
 	SceneNode* moonNode;
 	SceneNode* moon;
+	SceneNode* treeNode;
 	SceneNode* haloNode;
 	SceneNode* halo[5];
 
@@ -65,4 +66,8 @@ protected:
 	GLuint  haloTexture;
 	GLuint  bumpTex;
 	GLuint  cubeMap;
+
+	Mesh* treeMesh;
+	GLuint treeTex;
+	GLuint treeBumpTex;
 };

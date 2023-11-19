@@ -6,10 +6,10 @@ void Camera::UpdateCamera(float dt, float speed) {
 	previousPitch    = pitch;
 	previousYaw      = yaw;
 
-	if (Window::GetMouse()->ButtonHeld(MOUSE_LEFT)) {
+	//if (Window::GetMouse()->ButtonHeld(MOUSE_LEFT)) {
 		pitch -= (Window::GetMouse()->GetRelativePosition().y);
 		yaw -= (Window::GetMouse()->GetRelativePosition().x);
-	}
+	//}
 
 	if (Window::GetKeyboard()->KeyDown(KEYBOARD_Q)) {
 		roll += 100.0f * dt;

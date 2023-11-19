@@ -8,31 +8,34 @@
 #define SHADOWSIZE 2048
 
 Renderer::Renderer(Window& parent) : OGLRenderer(parent) {
-	sunTexture   = SOIL_load_OGL_texture(TEXTUREDIR"noise.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	sunTexture = SOIL_load_OGL_texture(TEXTUREDIR"noise.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 	earthTexture = SOIL_load_OGL_texture(TEXTUREDIR"Barren Reds.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	skyTexture   = SOIL_load_OGL_texture(TEXTUREDIR"cloud.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	skyTexture = SOIL_load_OGL_texture(TEXTUREDIR"cloud.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
 	waterTexture = SOIL_load_OGL_texture(TEXTUREDIR"reflection.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	haloTexture  = SOIL_load_OGL_texture(TEXTUREDIR"light-effect.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	bumpTex      = SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
-	cubeMap      = SOIL_load_OGL_cubemap(TEXTUREDIR"uni_east.jpg", TEXTUREDIR"uni_west.jpg",
+	haloTexture = SOIL_load_OGL_texture(TEXTUREDIR"light-effect.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	bumpTex = SOIL_load_OGL_texture(TEXTUREDIR"Barren RedsDOT3.JPG", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	treeTex = SOIL_load_OGL_texture(TEXTUREDIR"Tree.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	treeBumpTex = SOIL_load_OGL_texture(TEXTUREDIR"Tree_N.png", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+	cubeMap = SOIL_load_OGL_cubemap(TEXTUREDIR"uni_east.jpg", TEXTUREDIR"uni_west.jpg",
 		TEXTUREDIR"uni_top.jpg", TEXTUREDIR"uni_bot.jpg",
 		TEXTUREDIR"uni_north.jpg", TEXTUREDIR"uni_south.jpg",
 		SOIL_LOAD_RGB, SOIL_CREATE_NEW_ID, 0);
 
-	if (!sunTexture || !earthTexture || !skyTexture || !waterTexture || !haloTexture || !bumpTex || !cubeMap) {
+	if (!sunTexture || !earthTexture || !skyTexture || !waterTexture || !haloTexture || !bumpTex || !treeTex || !treeBumpTex || !cubeMap) {
 		return;
 	}
 
-	SetTextureRepeating(sunTexture,   true);
+	SetTextureRepeating(sunTexture, true);
 	SetTextureRepeating(earthTexture, true);
-	SetTextureRepeating(skyTexture,   true);
+	SetTextureRepeating(skyTexture, true);
 	SetTextureRepeating(waterTexture, true);
-	SetTextureRepeating(haloTexture,  true);
-	SetTextureRepeating(bumpTex,      true);
+	SetTextureRepeating(haloTexture, true);
+	SetTextureRepeating(bumpTex, true);
+	SetTextureRepeating(treeTex, true);
 
-	basicShader  = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
+	basicShader = new Shader("SceneVertex.glsl", "SceneFragment.glsl");
 	skyboxShader = new Shader("skyboxVertex.glsl", "skyboxFragment.glsl");
-	haloShader   = new Shader("haloVertex.glsl", "haloFragment.glsl");
+	haloShader = new Shader("haloVertex.glsl", "haloFragment.glsl");
 	shadowShader = new Shader("shadowSceneVert.glsl", "shadowSceneFrag.glsl");
 	if (!basicShader->LoadSuccess() || !skyboxShader->LoadSuccess() || !haloShader->LoadSuccess() || !shadowShader->LoadSuccess()) {
 		return;
@@ -85,6 +88,8 @@ Renderer::~Renderer(void) {
 	glDeleteTextures(1, &waterTexture);
 	glDeleteTextures(1, &haloTexture);
 	glDeleteTextures(1, &bumpTex);
+	glDeleteTextures(1, &treeTex);
+	glDeleteTextures(1, &treeBumpTex);
 	glDeleteTextures(1, &cubeMap);
 }
 
@@ -94,6 +99,7 @@ void Renderer::InitScene() {
 	sphere = new Sphere(15.0, 2);
 	earthSurface = new SphereHeightMap();
 	waterSurface = Sphere::GenWaterWave(15.0, 2);
+	treeMesh = Mesh::LoadFromMeshFile("Tree.msh");
 
 	root = new SceneNode();
 	root->SetTransform(Matrix4());
@@ -158,6 +164,27 @@ void Renderer::InitScene() {
 	moon->SetBumpTex(bumpTex);
 	moon->SetShader(shadowShader);
 	moonNode->AddChild(moon);
+
+	treeNode = new SceneNode();
+	earth->AddChild(treeNode);	
+	Matrix4 treeTranslation[6] = { Matrix4::Translation(Vector3(-10, 41, 0)) * Matrix4::Rotation(30, Vector3(0, 1, 1)),
+		Matrix4::Translation(Vector3(-19.5,   43, -10.5)) * Matrix4::Rotation( 10, Vector3(0, 1, 1)),
+		Matrix4::Translation(Vector3(-21.5,   41, -12.5)) * Matrix4::Rotation( 30, Vector3(0, 0, 1)),
+		Matrix4::Translation(Vector3(-17  ,   40,     0)) * Matrix4::Rotation( 15, Vector3(1, 0, 0)),
+		Matrix4::Translation(Vector3( 20  , 40.5,    -5)) * Matrix4::Rotation( 30, Vector3(0, 1, 1)),
+		Matrix4::Translation(Vector3( 16  , 35.5,    16)) * Matrix4::Rotation(-15, Vector3(1, 0, 0)) };
+
+	for (int i = 0; i < 6; i++) {
+		SceneNode* tree = new SceneNode();
+		tree->SetMesh(treeMesh);
+		tree->SetColour(Vector4(1, 1, 1, 1));
+		tree->SetTransform(treeTranslation[i]);
+		tree->SetModelScale(Vector3(0.1, 0.1, 0.1));
+		tree->SetTexture(treeTex);
+		tree->SetBumpTex(treeBumpTex);
+		tree->SetShader(shadowShader);
+		treeNode->AddChild(tree);
+	}
 
 	haloNode = new SceneNode();
 	root->AddChild(haloNode);
@@ -287,11 +314,12 @@ void Renderer::DrawNode(SceneNode* n) {
 			glUniformMatrix4fv(glGetUniformLocation(basicShader->GetProgram(), "modelMatrix"), 1, false, model.values);
 			glUniform4fv(glGetUniformLocation(basicShader->GetProgram(), "nodeColour"), 1, (float*)&n->GetColour());
 
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, n->GetTexture());
-
 			glUniform1i(glGetUniformLocation(basicShader->GetProgram(), "useTexture"), n->GetTexture());
-
+			if (n->GetTexture()) {
+				glUniform1i(glGetUniformLocation(basicShader->GetProgram(), "diffuseTex"), 0);
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, n->GetTexture());
+			}
 			n->Draw(*this);
 		}
 		else if (n->GetShader() == shadowShader) {
@@ -315,6 +343,11 @@ void Renderer::DrawNode(SceneNode* n) {
 			else {
 				glUniform1i(glGetUniformLocation(shadowShader->GetProgram(), "useBumpTex"), false);
 			}
+
+			glUniform1i(glGetUniformLocation(shadowShader->GetProgram(), "shadowTex"), 2);
+			glActiveTexture(GL_TEXTURE2);
+			glBindTexture(GL_TEXTURE_2D, shadowTex);
+
 			glUniform3fv(glGetUniformLocation(shadowShader->GetProgram(), "cameraPos"), 1, (float*)&camera->GetPosition());
 
 			n->Draw(*this);
@@ -348,7 +381,7 @@ void Renderer::DrawShadowScene() {
 	BindShader(basicShader);
 
 	viewMatrix = Matrix4::BuildViewMatrix(light->GetPosition(), Vector3(0, 0, 0));
-	shadowMatrix = Matrix4::Perspective(1, 100, 1, 45);
+	shadowMatrix = Matrix4::Perspective(1, 10000, 1, 45);
 
 	DrawShadowNode(root);
 
