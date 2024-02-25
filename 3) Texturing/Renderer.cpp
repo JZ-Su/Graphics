@@ -18,6 +18,7 @@ Renderer::Renderer(Window& parent) :OGLRenderer(parent) {
 	filtering = true;
 	repeating = false;
 	init = true;
+	i = 0;
 }
 
 Renderer::~Renderer(void) {
@@ -36,6 +37,38 @@ void Renderer::RenderScene() {
 	glBindTexture(GL_TEXTURE_2D, texture);
 
 	triangle->Draw();
+
+	if (i == 10) {
+		GLubyte* bufferData = new GLubyte[512 * 512 * 3];
+		glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, bufferData);
+		for (int j = 0; j < 400; j++) {
+			std::cout << Vector3(bufferData[3 * i], bufferData[3 * i + 1], bufferData[3 * i + 2]);
+		}
+		std::cout << "//////////////////////////////" << std::endl;
+		delete[]bufferData;
+	}
+
+	if (i == 20) {
+		glClear(GL_COLOR_BUFFER_BIT);
+		GLuint fbo;
+		glGenFramebuffers(1, &fbo);
+		glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture, 0);
+
+		GLuint pbo;
+		glGenBuffers(1, &pbo);
+		glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+		glBufferData(GL_PIXEL_PACK_BUFFER, width * height * 3, nullptr, GL_DYNAMIC_READ);
+
+		glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		GLubyte* pixelData = (GLubyte*)glMapBuffer(GL_PIXEL_PACK_BUFFER, GL_READ_ONLY);
+		for (int j = 301; j < 600; j++) {
+			std::cout << Vector3(pixelData[3 * i], pixelData[3 * i + 1], pixelData[3 * i + 2]);
+		}
+		glDeleteBuffers(1, &pbo);
+		glDeleteFramebuffers(1, &fbo);
+	}
+	if (i < 100)i++;
 }
 
 void Renderer::UpdateTextureMatrix(float value) {

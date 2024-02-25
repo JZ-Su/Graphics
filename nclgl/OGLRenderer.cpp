@@ -140,7 +140,7 @@ OGLRenderer::OGLRenderer(Window &window)	{
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 #endif
 
-	glClearColor(0.2f,0.2f,0.2f,1.0f);			//When we clear the screen, we want it to be dark grey
+	glClearColor(0.f,0.f,0.f,1.0f);			//When we clear the screen, we want it to be dark grey
 
 	currentShader = 0;							//0 is the 'null' object name for shader programs...
 

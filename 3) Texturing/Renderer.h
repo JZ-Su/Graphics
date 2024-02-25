@@ -19,4 +19,5 @@ protected:
 	GLuint texture;
 	bool filtering;
 	bool repeating;
+	int i;
 };
